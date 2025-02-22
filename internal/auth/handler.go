@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"server/configs"
+	"server/pkg/jwt"
 	"server/pkg/req"
 	"server/pkg/resp"
 )
@@ -29,7 +30,6 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDep) {
 
 func (a *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Login Page Here!\n")
 		//нужно прочитать Body
 		body, err := req.HandleBody[LoginRequest](&w, r)
 		if err != nil {
@@ -37,8 +37,22 @@ func (a *AuthHandler) Login() http.HandlerFunc {
 		}
 		fmt.Println(body)
 
+		email, err := a.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(a.Config.Auth.Secret).Create(jwt.JWTData{
+			Email: email,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		data := LoginResponce{
-			Token: "123",
+			Token: token,
 		}
 		resp.ResponceJson(w, 201, data)
 	}
@@ -51,6 +65,24 @@ func (a *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		a.AuthService.Register(body.Email, body.Password, body.Name)
+
+		email, err := a.AuthService.Register(body.Email, body.Password, body.Name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(a.Config.Auth.Secret).Create(jwt.JWTData{
+			Email: email,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := RegisterResponce{
+			Token: token,
+		}
+		resp.ResponceJson(w, 201, data)
 	}
 }

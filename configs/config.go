@@ -21,7 +21,7 @@ type AuthConfig struct {
 }
 
 func LoadConfig() *Config {
-	err := godotenv.Load("C:\\Son_Alex\\API_course\\AdvansedGo\\server\\.env")
+	err := godotenv.Load("C:\\Users\\aliaksei.makarevich\\go\\AdvansedGo\\server\\.env")
 	if err != nil {
 		fmt.Println("Error loading .env file, using default config", err.Error())
 	}

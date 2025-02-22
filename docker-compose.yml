@@ -2,7 +2,7 @@ services:
   postgres:
     container_name: postgres_go
     image: postgres:16.4
-    environment:
+    enviroment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: my_pass
       PGDATA: /data/postgres
